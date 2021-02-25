@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.CatalogEntry;
 import org.hl7.fhir.r4.model.ChargeItemDefinition;
+import org.hl7.fhir.r4.model.Coding;
 import org.hl7.fhir.r4.model.DeviceDefinition;
 import org.hl7.fhir.r4.model.DeviceDefinition.DeviceDefinitionSpecializationComponent;
 import org.hl7.fhir.r4.model.Extension;
@@ -420,10 +421,10 @@ public class DigaFhirVerzeichnisParser {
 					.getExtensionsByUrl("diagnose").stream().map(e -> e.getValue()).collect(Collectors.toList());
 
 			for (Type diagnose : indikationenTypes) {
-				diga.getKontraindikationen()
-					.addIndikation(
-						diagnose.castToCodeableConcept(diagnose).getCoding().stream().findFirst().get().getCode()
-					);
+				Optional<Coding> coding = diagnose.castToCodeableConcept(diagnose).getCoding().stream().findFirst();
+				if (coding.isPresent()) {
+					diga.getKontraindikationen().addIndikation(coding.get().getCode());
+				}
 			}
 		}
 	}
@@ -437,10 +438,10 @@ public class DigaFhirVerzeichnisParser {
 					.getExtensionsByUrl("diagnose").stream().map(e -> e.getValue()).collect(Collectors.toList());
 
 			for (Type diagnose : indikationenTypes) {
-				diga.getIndikationen()
-					.addIndikation(
-						diagnose.castToCodeableConcept(diagnose).getCoding().stream().findFirst().get().getCode()
-					);
+				Optional<Coding> coding = diagnose.castToCodeableConcept(diagnose).getCoding().stream().findFirst();
+				if (coding.isPresent()) {
+					diga.getIndikationen().addIndikation(coding.get().getCode());
+				}
 			}
 		}
 	}

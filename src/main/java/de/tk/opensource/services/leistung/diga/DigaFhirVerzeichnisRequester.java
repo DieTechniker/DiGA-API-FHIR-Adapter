@@ -111,13 +111,13 @@ public class DigaFhirVerzeichnisRequester {
 				LOG.info("File 'DigaVerzeichnis.json' already exists. File will be overwritten..");
 			}
 
-			FileWriter myWriter = new FileWriter(outputFile);
-			myWriter.write(json);
-			myWriter.close();
+			try(FileWriter myWriter = new FileWriter(outputFile)) {
+				myWriter.write(json);
+				myWriter.close();
+			}
 
 		} catch (IOException e) {
 			LOG.error(e.getMessage());
-			e.printStackTrace();
 		}
 	}
 
