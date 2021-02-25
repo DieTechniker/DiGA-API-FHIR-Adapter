@@ -1,6 +1,6 @@
 /*--- (C) 1999-2020 Techniker Krankenkasse ---*/
 
-package de.tk.os.services.leistung.diga.type;
+package de.tk.opensource.services.leistung.diga.type;
 
 import java.util.HashSet;
 import java.util.Set;

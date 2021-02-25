@@ -1,6 +1,6 @@
 /*--- (C) 1999-2020 Techniker Krankenkasse ---*/
 
-package de.tk.os.services.leistung.diga;
+package de.tk.opensource.services.leistung.diga;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.CatalogEntry;
 import org.hl7.fhir.r4.model.ChargeItemDefinition;
+import org.hl7.fhir.r4.model.Coding;
 import org.hl7.fhir.r4.model.DeviceDefinition;
 import org.hl7.fhir.r4.model.DeviceDefinition.DeviceDefinitionSpecializationComponent;
 import org.hl7.fhir.r4.model.Extension;
@@ -31,11 +32,11 @@ import org.hl7.fhir.r4.model.UsageContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.tk.os.services.leistung.diga.type.DigaVerordnungseinheit;
-import de.tk.os.services.leistung.diga.type.DigaVerzeichnis;
-import de.tk.os.services.leistung.diga.type.Hersteller;
-import de.tk.os.services.leistung.diga.type.Plattform;
-import de.tk.os.services.leistung.diga.type.Preisinfo;
+import de.tk.opensource.services.leistung.diga.type.DigaVerordnungseinheit;
+import de.tk.opensource.services.leistung.diga.type.DigaVerzeichnis;
+import de.tk.opensource.services.leistung.diga.type.Hersteller;
+import de.tk.opensource.services.leistung.diga.type.Plattform;
+import de.tk.opensource.services.leistung.diga.type.Preisinfo;
 
 public class DigaFhirVerzeichnisParser {
 
@@ -420,10 +421,10 @@ public class DigaFhirVerzeichnisParser {
 					.getExtensionsByUrl("diagnose").stream().map(e -> e.getValue()).collect(Collectors.toList());
 
 			for (Type diagnose : indikationenTypes) {
-				diga.getKontraindikationen()
-					.addIndikation(
-						diagnose.castToCodeableConcept(diagnose).getCoding().stream().findFirst().get().getCode()
-					);
+				Optional<Coding> coding = diagnose.castToCodeableConcept(diagnose).getCoding().stream().findFirst();
+				if (coding.isPresent()) {
+					diga.getKontraindikationen().addIndikation(coding.get().getCode());
+				}
 			}
 		}
 	}
@@ -437,10 +438,10 @@ public class DigaFhirVerzeichnisParser {
 					.getExtensionsByUrl("diagnose").stream().map(e -> e.getValue()).collect(Collectors.toList());
 
 			for (Type diagnose : indikationenTypes) {
-				diga.getIndikationen()
-					.addIndikation(
-						diagnose.castToCodeableConcept(diagnose).getCoding().stream().findFirst().get().getCode()
-					);
+				Optional<Coding> coding = diagnose.castToCodeableConcept(diagnose).getCoding().stream().findFirst();
+				if (coding.isPresent()) {
+					diga.getIndikationen().addIndikation(coding.get().getCode());
+				}
 			}
 		}
 	}

@@ -1,6 +1,6 @@
 /*--- (C) 1999-2020 Techniker Krankenkasse ---*/
 
-package de.tk.os.services.leistung.diga;
+package de.tk.opensource.services.leistung.diga;
 
 public class FhirDigaURIs {
 
