@@ -1,6 +1,6 @@
 /*--- (C) 1999-2020 Techniker Krankenkasse ---*/
 
-package de.tk.os.services.leistung.diga;
+package de.tk.opensource.services.leistung.diga;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import de.tk.os.services.leistung.diga.type.DigaVerzeichnis;
+import de.tk.opensource.services.leistung.diga.type.DigaVerzeichnis;
 
 public class DigaFhirVerzeichnisRequester {
 

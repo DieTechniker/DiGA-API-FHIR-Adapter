@@ -1,6 +1,6 @@
 /*--- (C) 1999-2020 Techniker Krankenkasse ---*/
 
-package de.tk.os.services.leistung.diga;
+package de.tk.opensource.services.leistung.diga;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
@@ -31,11 +31,11 @@ import org.hl7.fhir.r4.model.UsageContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.tk.os.services.leistung.diga.type.DigaVerordnungseinheit;
-import de.tk.os.services.leistung.diga.type.DigaVerzeichnis;
-import de.tk.os.services.leistung.diga.type.Hersteller;
-import de.tk.os.services.leistung.diga.type.Plattform;
-import de.tk.os.services.leistung.diga.type.Preisinfo;
+import de.tk.opensource.services.leistung.diga.type.DigaVerordnungseinheit;
+import de.tk.opensource.services.leistung.diga.type.DigaVerzeichnis;
+import de.tk.opensource.services.leistung.diga.type.Hersteller;
+import de.tk.opensource.services.leistung.diga.type.Plattform;
+import de.tk.opensource.services.leistung.diga.type.Preisinfo;
 
 public class DigaFhirVerzeichnisParser {
 
