@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>de.tk.os.services.leistung.diga</groupId>
-  <artifactId>diga-verzeichnis</artifactId>
+  <groupId>de.tk.opensource.services.leistung.diga</groupId>
+  <artifactId>diga-fhir-adapter</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <name>DiGA-API FHIR Adapter</name>
   
@@ -66,10 +66,10 @@
 	    </dependency>
 	    
 	    <dependency>
-	        <groupId>ca.uhn.hapi.fhir</groupId>
-	        <artifactId>hapi-fhir-validation-resources-R4</artifactId>
-	        <version>5.2.1</version>
-	    </dependency>
+    		<groupId>ca.uhn.hapi.fhir</groupId>
+    		<artifactId>hapi-fhir-validation-resources-r4</artifactId>
+    		<version>5.2.1</version>
+		</dependency>
 	    
 	     <dependency>
 	    	<groupId>commons-cli</groupId>

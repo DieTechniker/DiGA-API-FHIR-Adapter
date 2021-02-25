@@ -1,0 +1,6 @@
+
+language: java
+
+script:
+  # the following command line builds the project, runs the tests with coverage
+  - mvn clean install
