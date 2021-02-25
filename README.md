@@ -42,9 +42,7 @@ usage: java -jar diga-api-fhir-adapter.jar [optionen]
 Das Programm erstellt nach erfolgreicher Ausführung eine Datei mit dem Namen "DigaVerzeichnis.json" im Projektverzeichnis mit allen Infos zu den DiGA Verordnungseinheiten.
 
 
-**english version**
-
-=====================================================================
+**english version** =====================================================================
 
 # Parser for BfArM's DiGA-API
 
