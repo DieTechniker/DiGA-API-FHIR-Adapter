@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.com/DieTechniker/DiGA-API-FHIR-Adapter.svg?branch=main)](https://travis-ci.com/DieTechniker/DiGA-API-FHIR-Adapter)
+
 *english version below*
 
 # Parser für DiGA-API des BfArM
