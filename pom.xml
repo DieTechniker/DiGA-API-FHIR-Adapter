@@ -8,6 +8,9 @@
   <properties>
   	<project.build.sourceEncoding>ISO-8859-1</project.build.sourceEncoding>
   	<slf4jVersion>1.7.28</slf4jVersion>
+  	<sonar.projectKey>DieTechniker_DiGA-API-FHIR-Adapter</sonar.projectKey>
+  	<sonar.organization>dietechniker</sonar.organization>
+  	<sonar.host.url>https://sonarcloud.io</sonar.host.url>	  
   </properties>
   
   
