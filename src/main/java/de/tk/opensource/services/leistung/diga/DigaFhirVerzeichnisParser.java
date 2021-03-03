@@ -11,9 +11,11 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -44,7 +46,8 @@ public class DigaFhirVerzeichnisParser {
 	private static final Logger LOG = LoggerFactory.getLogger(DigaFhirVerzeichnisRequester.class);
 
 	private FhirContext fhirContext;
-	private DateFormat dateFormat = new SimpleDateFormat("yyyy-mm-dd");
+	private DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+	private DateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss"); //Date time in 24h format
 
 	private List<Organization> organizationList;
 	private List<CatalogEntry> catalogEntryList;
@@ -166,6 +169,8 @@ public class DigaFhirVerzeichnisParser {
 			//Add general app infos (from CatalogEntries):
 			for (DigaVerordnungseinheit diga : digas) {
 				readZulassungsZeitraum(catalogEntry, diga);
+				readAppMetaInfo(diga, catalogEntry);
+
 				diga.setAppName(display);
 				diga.setAppStatus(catalogEntry.getStatus().name());
 
@@ -240,6 +245,8 @@ public class DigaFhirVerzeichnisParser {
 		//Plattformen:
 		readPlattformen(modul, diga);
 
+		//Meta-Info:
+		readModulMetaInfo(diga, modul);
 	}
 
 	private void readPlattformen(DeviceDefinition modul, DigaVerordnungseinheit diga) {
@@ -312,15 +319,53 @@ public class DigaFhirVerzeichnisParser {
 		readVertragsaerztlicheLeistungen(diga, item);
 
 		readPreis(diga, item);
-		readMetaInfos(diga, item);
+		readVerordnungseinheitMetaInfo(diga, item);
 
 		return diga;
 	}
 
-	private void readMetaInfos(DigaVerordnungseinheit diga, ChargeItemDefinition item) {
+	private void readVerordnungseinheitMetaInfo(DigaVerordnungseinheit diga, ChargeItemDefinition item) {
+		diga.getMetaInfo().setVerordnungseinheitVersion(item.getMeta().getVersionId());
+		updateLetzteAenderung(diga, item.getMeta().getLastUpdated());
+	}
 
-		diga.getMetaInfo().setVersion(item.getMeta().getVersionId());
-		diga.getMetaInfo().setLetzteAenderung(item.getMeta().getLastUpdated().toString());
+	private void readModulMetaInfo(DigaVerordnungseinheit diga, DeviceDefinition item) {
+		diga.getMetaInfo().setModulVersion(item.getMeta().getVersionId());
+		updateLetzteAenderung(diga, item.getMeta().getLastUpdated());
+	}
+
+	private void readRootDeviceMetaInfo(DigaVerordnungseinheit diga, DeviceDefinition item) {
+		diga.getMetaInfo().setRootDeviceVersion(item.getMeta().getVersionId());
+		updateLetzteAenderung(diga, item.getMeta().getLastUpdated());
+	}
+
+	private void readAppMetaInfo(DigaVerordnungseinheit diga, CatalogEntry item) {
+		diga.getMetaInfo().setAppVersion(item.getMeta().getVersionId());
+		updateLetzteAenderung(diga, item.getMeta().getLastUpdated());
+	}
+
+	private void readOrganizationMetaInfo(DigaVerordnungseinheit diga, Organization item) {
+		diga.getMetaInfo().setOrganisationVersion(item.getMeta().getVersionId());
+		updateLetzteAenderung(diga, item.getMeta().getLastUpdated());
+	}
+
+	private void updateLetzteAenderung(DigaVerordnungseinheit diga, Date date) {
+
+		if (diga.getMetaInfo().getLetzteAenderung() == null || diga.getMetaInfo().getLetzteAenderung().isEmpty()) {
+			diga.getMetaInfo().setLetzteAenderung(dateTimeFormat.format(date));
+			return;
+		}
+
+		try {
+			Date currentDate = dateTimeFormat.parse(diga.getMetaInfo().getLetzteAenderung());
+
+			if (date.after(currentDate)) {
+				diga.getMetaInfo().setLetzteAenderung(dateTimeFormat.format(date));
+			}
+
+		} catch (ParseException e) {
+			throw new IllegalStateException(e.getMessage(), e);
+		}
 
 	}
 
@@ -493,6 +538,9 @@ public class DigaFhirVerzeichnisParser {
 		//Homepage:
 		diga.setHomepage(rootDevice.getOnlineInformation());
 
+		//MetaInfos:
+		readRootDeviceMetaInfo(diga, rootDevice);
+
 	}
 
 	private void readAppHersteller(DeviceDefinition rootDevice, DigaVerordnungseinheit diga) {
@@ -511,6 +559,8 @@ public class DigaFhirVerzeichnisParser {
 		hersteller.setStandort(organization.get().getAddressFirstRep().getCity());
 
 		diga.setHersteller(hersteller);
+
+		readOrganizationMetaInfo(diga, organization.get());
 	}
 
 }
