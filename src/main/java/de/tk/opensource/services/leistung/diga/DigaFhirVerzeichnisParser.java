@@ -167,6 +167,8 @@ public class DigaFhirVerzeichnisParser {
 			for (DigaVerordnungseinheit diga : digas) {
 				readZulassungsZeitraum(catalogEntry, diga);
 				diga.setAppName(display);
+				diga.setAppStatus(catalogEntry.getStatus().name());
+
 				LOG.info(
 					"Added DiGA: "
 					+ diga.getAppName()
@@ -296,7 +298,7 @@ public class DigaFhirVerzeichnisParser {
 		ChargeItemDefinition item = rootDeviceOptional.get();
 
 		diga.setVerordnungseinheitBezeichnung(item.getTitle().trim());
-		diga.setStatus(item.getStatus().name());
+		diga.setVerordnungsEinheitStatus(item.getStatus().name());
 		diga.setPzn(item.getCode().getCodingFirstRep().getCode());
 		diga.setDigaVeId(item.getIdentifierFirstRep().getValue());
 
