@@ -24,7 +24,8 @@ public class DigaVerordnungseinheit {
 	private MetaInfo metaInfo;
 	private String hoechstDauer;
 	private String mindestDauer;
-	private String status;
+	private String appStatus;
+	private String verordnungsEinheitStatus;
 	private Boolean vertragsaerztlicheLeistungen;
 	private NichtErstattungsfaehigeKostenHinweis nichtErstattungsfaehigeKostenHinweis;
 
@@ -198,12 +199,20 @@ public class DigaVerordnungseinheit {
 		this.mindestDauer = mindestDauer;
 	}
 
-	public String getStatus() {
-		return status;
+	public String getAppStatus() {
+		return appStatus;
 	}
 
-	public void setStatus(String status) {
-		this.status = status;
+	public void setAppStatus(String appStatus) {
+		this.appStatus = appStatus;
+	}
+
+	public String getVerordnungsEinheitStatus() {
+		return verordnungsEinheitStatus;
+	}
+
+	public void setVerordnungsEinheitStatus(String verordnungsEinheitStatus) {
+		this.verordnungsEinheitStatus = verordnungsEinheitStatus;
 	}
 
 	public boolean isVertragsaerztlicheLeistungen() {

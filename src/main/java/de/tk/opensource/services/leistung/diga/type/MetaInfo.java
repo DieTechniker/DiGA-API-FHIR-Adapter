@@ -5,7 +5,11 @@ package de.tk.opensource.services.leistung.diga.type;
 public class MetaInfo {
 
 	private String letzteAenderung;
-	private String version;
+	private String organisationVersion;
+	private String appVersion;
+	private String rootDeviceVersion;
+	private String modulVersion;
+	private String verordnungseinheitVersion;
 
 	public String getLetzteAenderung() {
 		return letzteAenderung;
@@ -15,12 +19,57 @@ public class MetaInfo {
 		this.letzteAenderung = letzteAenderung;
 	}
 
-	public String getVersion() {
-		return version;
+	public String getVersionString() {
+		return
+			organisationVersion
+			+ "."
+			+ appVersion
+			+ "."
+			+ rootDeviceVersion
+			+ "."
+			+ modulVersion
+			+ "."
+			+ verordnungseinheitVersion;
 	}
 
-	public void setVersion(String version) {
-		this.version = version;
+	public String getOrganisationVersion() {
+		return organisationVersion;
+	}
+
+	public void setOrganisationVersion(String organisationVersion) {
+		this.organisationVersion = organisationVersion;
+	}
+
+	public String getAppVersion() {
+		return appVersion;
+	}
+
+	public void setAppVersion(String appVersion) {
+		this.appVersion = appVersion;
+	}
+
+	public String getModulVersion() {
+		return modulVersion;
+	}
+
+	public void setModulVersion(String modulVersion) {
+		this.modulVersion = modulVersion;
+	}
+
+	public String getVerordnungseinheitVersion() {
+		return verordnungseinheitVersion;
+	}
+
+	public void setVerordnungseinheitVersion(String verordnungseinheitVersion) {
+		this.verordnungseinheitVersion = verordnungseinheitVersion;
+	}
+
+	public String getRootDeviceVersion() {
+		return rootDeviceVersion;
+	}
+
+	public void setRootDeviceVersion(String rootDeviceVersion) {
+		this.rootDeviceVersion = rootDeviceVersion;
 	}
 
 }
