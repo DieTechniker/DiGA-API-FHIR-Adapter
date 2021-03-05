@@ -19,7 +19,7 @@ mvn install
 Im Projektverzeichnis kann nach dem Build folgender Befehl ausgeführt werden:
 
 ```bash
-$  java -jar target/diga-api-fhir-adpater.jar -in <input-dir>
+$  java -jar target/diga-api-fhir-adapter.jar -in <input-dir> [-out <output-file>]
 ```
 
 Im input-dir müssen alle hier genannten Dateien als JSON-Files vorliegen: 
@@ -34,9 +34,11 @@ Die Ressourcen müssen extern beim BfArM über einen REST-Service angeforert wer
 Usage:
 
 ```bash
-usage: java -jar diga-api-fhir-adapter.jar [optionen]
- -h,--help               prints the help
- -in,--input-dir <arg>   directory with FHIR json-input files
+usage: java -jar diga-api-fhir-adapter.jar [options]
+ -h,--help                  prints the help
+ -in,--input-dir <arg>      directory with FHIR json-input files 
+ -out,--output-file <arg>   output file for combined json data,
+                            - for stdout, default 'DigaVerzeichnis.json'
 ```
 
 ## Ausgabe
@@ -63,7 +65,7 @@ mvn install
 Within the project directory you can start the program with the following command:
 
 ```bash
-$  java -jar target/diga-api-fhir-adpater.jar -in <input-dir>
+$  java -jar target/diga-api-fhir-adpater.jar -in <input-dir> [-out <output-file>]
 ```
 
 The input-dir must contain all of the following files: 
@@ -78,9 +80,11 @@ Die Ressourcen müssen extern beim BfArM über einen REST-Service angeforert wer
 Usage:
 
 ```bash
-usage: java -jar diga-api-fhir-adapter.jar [optionen]
- -h,--help               prints the help
- -in,--input-dir <arg>   directory with FHIR json-input files
+usage: java -jar diga-api-fhir-adapter.jar [options]
+ -h,--help                  prints the help
+ -in,--input-dir <arg>      directory with FHIR json-input files 
+ -out,--output-file <arg>   output file for combined json data,
+                            - for stdout, default 'DigaVerzeichnis.json'
 ```
 
 ## Output
