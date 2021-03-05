@@ -19,7 +19,7 @@ mvn install
 Im Projektverzeichnis kann nach dem Build folgender Befehl ausgeführt werden:
 
 ```bash
-$  java -jar target/diga-api-fhir-adpater.jar -in <input-dir>
+$  java -jar target/diga-api-fhir-adapter.jar -in <input-dir> 
 ```
 
 Im input-dir müssen alle hier genannten Dateien als JSON-Files vorliegen: 
