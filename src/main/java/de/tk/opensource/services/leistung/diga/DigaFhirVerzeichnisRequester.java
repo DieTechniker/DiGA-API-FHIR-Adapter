@@ -124,7 +124,7 @@ public class DigaFhirVerzeichnisRequester {
 	protected static Options createOptions() {
 		Options options = new Options();
 		Option help = new Option("h", "help", false, "prints the help");
-		Option input = new Option("in", "input-dir", true, "directory with FHIR json-input files");
+		Option input = new Option("in", "input-dir", true, "directory with FHIR XML-input files");
 		input.setRequired(true);
 
 		options.addOption(help);
