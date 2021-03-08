@@ -23,13 +23,15 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import de.tk.opensource.services.leistung.diga.type.HealthAppCatalog;
-
 public class FhirHealthAppCatalogRequester {
 
-	private static final Logger LOG = LoggerFactory.getLogger(FhirHealthAppCatalogRequester.class);
+	private static final Logger LOG = LoggerFactory.getLogger(DigaFhirVerzeichnisRequester.class);
 
 	private static String inputDir;
+
+	private static String outputFileName;
+
+	private static final String OUTPUT_FILE_NAME_DEFAULT = "DigaVerzeichnis.json";
 
 	public static void main(String[] args) {
 
@@ -48,6 +50,8 @@ public class FhirHealthAppCatalogRequester {
 				printHelp();
 			}
 
+			outputFileName = line.getOptionValue("out");
+
 			String[] leftOverArgs = line.getArgs();
 
 			if (leftOverArgs.length != 0) {
@@ -60,7 +64,7 @@ public class FhirHealthAppCatalogRequester {
 			printHelp();
 		}
 
-		new FhirHealthAppCatalogRequester().run();
+		new DigaFhirVerzeichnisRequester().run();
 	}
 
 	public void run() {
@@ -80,9 +84,9 @@ public class FhirHealthAppCatalogRequester {
 			System.exit(1);
 		}
 
-		FhirHealthAppCatalogParser parser = new FhirHealthAppCatalogParser();
+		DigaFhirVerzeichnisParser parser = new DigaFhirVerzeichnisParser();
 
-		HealthAppCatalog digaVerzeichnis =
+		DigaVerzeichnis digaVerzeichnis =
 			parser
 				.withCatalogEntriesInput(catalogEntriesInputStream)
 				.withDeviceDefinitionsInput(deviceDefinitionsInputStream)
@@ -93,7 +97,7 @@ public class FhirHealthAppCatalogRequester {
 		printDigaVerzeichnis(digaVerzeichnis);
 	}
 
-	private void printDigaVerzeichnis(HealthAppCatalog digaVerzeichnis) {
+	private void printDigaVerzeichnis(DigaVerzeichnis digaVerzeichnis) {
 
 		ObjectMapper mapper = new ObjectMapper();
 		String json;
@@ -104,16 +108,22 @@ public class FhirHealthAppCatalogRequester {
 		}
 
 		try {
-			File outputFile = new File("DigaVerzeichnis.json");
-			if (outputFile.createNewFile()) {
-				LOG.info("File created: " + outputFile.getName());
-			} else {
-				LOG.info("File 'DigaVerzeichnis.json' already exists. File will be overwritten..");
-			}
 
-			try(FileWriter myWriter = new FileWriter(outputFile)) {
-				myWriter.write(json);
-				myWriter.close();
+			if(StringUtils.equals("-", outputFileName)) {
+				System.out.print(json);
+			} else {
+				outputFileName = StringUtils.defaultString(outputFileName, OUTPUT_FILE_NAME_DEFAULT);
+				File outputFile = new File(outputFileName);
+				if (outputFile.createNewFile()) {
+					LOG.info("File created: " + outputFileName);
+				} else {
+					LOG.info("File '" + outputFileName + "' already exists. File will be overwritten.");
+				}
+
+				try(FileWriter myWriter = new FileWriter(outputFile)) {
+					myWriter.write(json);
+					myWriter.close();
+				}
 			}
 
 		} catch (IOException e) {
@@ -124,18 +134,21 @@ public class FhirHealthAppCatalogRequester {
 	protected static Options createOptions() {
 		Options options = new Options();
 		Option help = new Option("h", "help", false, "prints the help");
-		Option input = new Option("in", "input-dir", true, "directory with FHIR json-input files");
+		Option input = new Option("in", "input-dir", true, "directory with FHIR XML-input files");
 		input.setRequired(true);
+		Option output = new Option("out", "output-file", true, "output file for combined json data, \n- for stdout, default '" + OUTPUT_FILE_NAME_DEFAULT + "'");
+		output.setRequired(false);
 
 		options.addOption(help);
 		options.addOption(input);
+		options.addOption(output);
 
 		return options;
 	}
 
 	protected static void printHelp() {
 		HelpFormatter formatter = new HelpFormatter();
-		formatter.printHelp("java -jar diga-api-fhir-adapter.jar [optionen]", createOptions());
+		formatter.printHelp("java -jar diga-api-fhir-adapter.jar [options]", createOptions());
 		System.exit(0);
 	}
 

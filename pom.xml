@@ -86,7 +86,7 @@
    </dependencies>
    
    <build>
-   <finalName>diga-api-fhir-adpater</finalName>
+   <finalName>diga-api-fhir-adapter</finalName>
    
    <plugins>
    
@@ -119,7 +119,7 @@
                 <addClasspath>true</addClasspath>
                 <classpathPrefix>libs/</classpathPrefix>
                 <mainClass>
-                    de.tk.os.services.leistung.diga.DigaFhirVerzeichnisRequester
+                    de.tk.opensource.services.leistung.diga.DigaFhirVerzeichnisRequester
                 </mainClass>
             </manifest>
           </archive>
