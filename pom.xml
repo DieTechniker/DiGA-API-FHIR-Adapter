@@ -119,7 +119,7 @@
                 <addClasspath>true</addClasspath>
                 <classpathPrefix>libs/</classpathPrefix>
                 <mainClass>
-                    de.tk.opensource.services.leistung.diga.DigaFhirVerzeichnisRequester
+                    de.tk.opensource.services.leistung.diga.FhirHealthAppCatalogRequester
                 </mainClass>
             </manifest>
           </archive>
