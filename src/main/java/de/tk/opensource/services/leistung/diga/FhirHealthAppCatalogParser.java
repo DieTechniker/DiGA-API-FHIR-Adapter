@@ -520,8 +520,9 @@ public class FhirHealthAppCatalogParser {
 				.filter(i -> FhirHealthAppURIs.DIGA_ID.equals(i.getSystem()))
 				.map(i -> i.getValue())
 				.findAny()
-				.orElse("");
-		diga.getAppInfo().setDigaId(digaId);
+				.orElse("0");
+
+		diga.getAppInfo().setDigaId(String.format("%05d", Integer.parseInt(digaId)));
 
 		//Organizations:
 		readAppHersteller(rootDevice, diga);
