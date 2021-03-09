@@ -168,7 +168,7 @@ public class FhirHealthAppCatalogParser {
 			for (PlainCatalogEntry plainCatalogEntry : plainCatalogEntries) {
 
 				readValidityPeriod(catalogEntry, plainCatalogEntry);
-				readAppMetaInfo(plainCatalogEntry, catalogEntry);
+				readRegistrationMetaInfo(plainCatalogEntry, catalogEntry);
 
 				plainCatalogEntry.getRegistrationInfo().setAppStatus(catalogEntry.getStatus().name());
 
@@ -318,11 +318,16 @@ public class FhirHealthAppCatalogParser {
 		return diga;
 	}
 
-	private void readVerordnungseinheitMetaInfo(PlainCatalogEntry diga, ChargeItemDefinition item) {
-		diga.getPrescriptionUnitInfo().getMetaInfo().setVersion(item.getMeta().getVersionId());
-		diga.getPrescriptionUnitInfo()
+	private void readRegistrationMetaInfo(PlainCatalogEntry diga, CatalogEntry item) {
+		diga.getRegistrationInfo().getMetaInfo().setVersion(item.getMeta().getVersionId());
+		diga.getRegistrationInfo()
 			.getMetaInfo()
 			.setLetzteAenderung(dateTimeFormat.format(item.getMeta().getLastUpdated()));
+	}
+
+	private void readAppMetaInfo(PlainCatalogEntry diga, DeviceDefinition item) {
+		diga.getAppInfo().getMetaInfo().setVersion(item.getMeta().getVersionId());
+		diga.getAppInfo().getMetaInfo().setLetzteAenderung(dateTimeFormat.format(item.getMeta().getLastUpdated()));
 	}
 
 	private void readModulMetaInfo(PlainCatalogEntry diga, DeviceDefinition item) {
@@ -330,12 +335,7 @@ public class FhirHealthAppCatalogParser {
 		diga.getModuleInfo().getMetaInfo().setLetzteAenderung(dateTimeFormat.format(item.getMeta().getLastUpdated()));
 	}
 
-	private void readRootDeviceMetaInfo(PlainCatalogEntry diga, DeviceDefinition item) {
-		diga.getAppInfo().getMetaInfo().setVersion(item.getMeta().getVersionId());
-		diga.getAppInfo().getMetaInfo().setLetzteAenderung(dateTimeFormat.format(item.getMeta().getLastUpdated()));
-	}
-
-	private void readAppMetaInfo(PlainCatalogEntry diga, CatalogEntry item) {
+	private void readVerordnungseinheitMetaInfo(PlainCatalogEntry diga, ChargeItemDefinition item) {
 		diga.getPrescriptionUnitInfo().getMetaInfo().setVersion(item.getMeta().getVersionId());
 		diga.getPrescriptionUnitInfo()
 			.getMetaInfo()
@@ -457,7 +457,7 @@ public class FhirHealthAppCatalogParser {
 			for (Type diagnose : indikationenTypes) {
 				Optional<Coding> coding = diagnose.castToCodeableConcept(diagnose).getCoding().stream().findFirst();
 				if (coding.isPresent()) {
-					diga.getPrescriptionUnitInfo().getContraIndicationInfo().addIndikation(coding.get().getCode());
+					diga.getPrescriptionUnitInfo().getContraIndicationInfo().addIndication(coding.get().getCode());
 				}
 			}
 		}
@@ -530,7 +530,7 @@ public class FhirHealthAppCatalogParser {
 		diga.getAppInfo().setHomepage(rootDevice.getOnlineInformation());
 
 		//MetaInfos:
-		readRootDeviceMetaInfo(diga, rootDevice);
+		readAppMetaInfo(diga, rootDevice);
 
 	}
 

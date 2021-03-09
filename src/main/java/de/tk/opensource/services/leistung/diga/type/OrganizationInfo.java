@@ -2,7 +2,7 @@
 
 package de.tk.opensource.services.leistung.diga.type;
 
-public class OrganizationInfo {
+public class OrganizationInfo implements RecordMetaInfoProvider {
 
 	private RecordMetaInfo metaInfo;
 	private String ik;
@@ -13,6 +13,7 @@ public class OrganizationInfo {
 		this.metaInfo = new RecordMetaInfo();
 	}
 
+	@Override
 	public RecordMetaInfo getMetaInfo() {
 		return metaInfo;
 	}

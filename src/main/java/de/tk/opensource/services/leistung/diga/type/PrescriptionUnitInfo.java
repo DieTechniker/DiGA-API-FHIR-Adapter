@@ -5,7 +5,7 @@ package de.tk.opensource.services.leistung.diga.type;
 import java.util.HashSet;
 import java.util.Set;
 
-public class PrescriptionUnitInfo {
+public class PrescriptionUnitInfo implements RecordMetaInfoProvider {
 
 	private RecordMetaInfo metaInfo;
 	private String pzn;
@@ -29,6 +29,7 @@ public class PrescriptionUnitInfo {
 		this.nichtErstattungsfaehigeKostenHinweis = new NichtErstattungsfaehigeKostenHinweis();
 	}
 
+	@Override
 	public RecordMetaInfo getMetaInfo() {
 		return metaInfo;
 	}

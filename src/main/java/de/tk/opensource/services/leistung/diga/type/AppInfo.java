@@ -2,7 +2,7 @@
 
 package de.tk.opensource.services.leistung.diga.type;
 
-public class AppInfo {
+public class AppInfo implements RecordMetaInfoProvider {
 
 	private RecordMetaInfo metaInfo;
 	private String appName;
@@ -16,6 +16,7 @@ public class AppInfo {
 		this.metaInfo = new RecordMetaInfo();
 	}
 
+	@Override
 	public RecordMetaInfo getMetaInfo() {
 		return metaInfo;
 	}

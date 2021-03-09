@@ -10,15 +10,15 @@ public class ContraIndicationInfo {
 	private List<String> indications = new ArrayList<>();
 	private List<String> disqualifiers = new ArrayList<>();
 
-	public List<String> getIndikationen() {
+	public List<String> getIndications() {
 		return indications;
 	}
 
-	public void setIndikationen(List<String> indikationen) {
+	public void setIndications(List<String> indikationen) {
 		this.indications = indikationen;
 	}
 
-	public void addIndikation(String indikation) {
+	public void addIndication(String indikation) {
 		if (indications == null) {
 			indications = new ArrayList<>();
 		}

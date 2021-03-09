@@ -5,7 +5,7 @@ package de.tk.opensource.services.leistung.diga.type;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ModuleInfo {
+public class ModuleInfo implements RecordMetaInfoProvider {
 
 	private RecordMetaInfo metaInfo;
 	private String modulBezeichnung;
@@ -16,6 +16,7 @@ public class ModuleInfo {
 		this.platformInfo = new ArrayList<>();
 	}
 
+	@Override
 	public RecordMetaInfo getMetaInfo() {
 		return metaInfo;
 	}
