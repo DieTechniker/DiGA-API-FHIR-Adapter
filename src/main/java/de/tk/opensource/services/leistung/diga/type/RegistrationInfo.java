@@ -6,9 +6,9 @@ public class RegistrationInfo implements RecordMetaInfoProvider {
 
 	private RecordMetaInfo metaInfo;
 
-	private String appZulassungsbeginn;
-	private String appZulassungsende;
-	private String appStatus;
+	private String appRegistrationStart;
+	private String appRegistrationEnd;
+	private String appRegistrationStatus;
 
 	public RegistrationInfo() {
 		this.metaInfo = new RecordMetaInfo();
@@ -23,28 +23,28 @@ public class RegistrationInfo implements RecordMetaInfoProvider {
 		this.metaInfo = metaInfo;
 	}
 
-	public String getAppZulassungsbeginn() {
-		return appZulassungsbeginn;
+	public String getAppRegistrationStart() {
+		return appRegistrationStart;
 	}
 
-	public void setAppValidityPeriod(String appZulassungsbeginn) {
-		this.appZulassungsbeginn = appZulassungsbeginn;
+	public void setAppRegistrationStart(String appRegistrationStart) {
+		this.appRegistrationStart = appRegistrationStart;
 	}
 
-	public String getAppZulassungsende() {
-		return appZulassungsende;
+	public String getAppRegistrationEnd() {
+		return appRegistrationEnd;
 	}
 
-	public void setValidityPeriod(String appZulassungsende) {
-		this.appZulassungsende = appZulassungsende;
+	public void setAppRegistrationEnd(String appRegistrationEnd) {
+		this.appRegistrationEnd = appRegistrationEnd;
 	}
 
-	public String getAppStatus() {
-		return appStatus;
+	public String getAppRegistrationStatus() {
+		return appRegistrationStatus;
 	}
 
-	public void setAppStatus(String appStatus) {
-		this.appStatus = appStatus;
+	public void setAppRegistrationStatus(String appRegistrationStatus) {
+		this.appRegistrationStatus = appRegistrationStatus;
 	}
 
 }

@@ -11,19 +11,19 @@ public class PrescriptionUnitInfo implements RecordMetaInfoProvider {
 	private String pzn;
 	private String digaVeId;
 	private String verordnungseinheitBezeichnung;
-	private IndicationInfo indications;
-	private ContraIndicationInfo contraIndications;
+	private IndicationInfo indicationInfo;
+	private ContraIndicationInfo contraIndicationInfo;
 	private Set<String> altersgruppen;
 	private int anwendungsTage;
 	private PriceInfo preisinfo;
-	private String verordnungsEinheitStatus;
+	private String prescriptionUnitAdmissionStatus;
 	private Boolean vertragsaerztlicheLeistungen;
 	private NichtErstattungsfaehigeKostenHinweis nichtErstattungsfaehigeKostenHinweis;
 
 	public PrescriptionUnitInfo() {
 		this.metaInfo = new RecordMetaInfo();
-		this.indications = new IndicationInfo();
-		this.contraIndications = new ContraIndicationInfo();
+		this.indicationInfo = new IndicationInfo();
+		this.contraIndicationInfo = new ContraIndicationInfo();
 		this.altersgruppen = new HashSet<>();
 		this.preisinfo = new PriceInfo();
 		this.nichtErstattungsfaehigeKostenHinweis = new NichtErstattungsfaehigeKostenHinweis();
@@ -63,19 +63,19 @@ public class PrescriptionUnitInfo implements RecordMetaInfoProvider {
 	}
 
 	public IndicationInfo getIndicationInfo() {
-		return indications;
+		return indicationInfo;
 	}
 
 	public void setIndicationInfo(IndicationInfo indikationen) {
-		this.indications = indikationen;
+		this.indicationInfo = indikationen;
 	}
 
 	public ContraIndicationInfo getContraIndicationInfo() {
-		return contraIndications;
+		return contraIndicationInfo;
 	}
 
 	public void setContraIndicationInfo(ContraIndicationInfo contraIndications) {
-		this.contraIndications = contraIndications;
+		this.contraIndicationInfo = contraIndications;
 	}
 
 	public Set<String> getAltersgruppen() {
@@ -106,12 +106,12 @@ public class PrescriptionUnitInfo implements RecordMetaInfoProvider {
 		this.preisinfo = preisinfo;
 	}
 
-	public String getVerordnungsEinheitStatus() {
-		return verordnungsEinheitStatus;
+	public String getPrescriptionUnitAdmissionStatus() {
+		return prescriptionUnitAdmissionStatus;
 	}
 
-	public void setVerordnungsEinheitStatus(String verordnungsEinheitStatus) {
-		this.verordnungsEinheitStatus = verordnungsEinheitStatus;
+	public void setPrescriptionUnitAdmissionStatus(String prescriptionUnitAdmissionStatus) {
+		this.prescriptionUnitAdmissionStatus = prescriptionUnitAdmissionStatus;
 	}
 
 	public Boolean getVertragsaerztlicheLeistungen() {

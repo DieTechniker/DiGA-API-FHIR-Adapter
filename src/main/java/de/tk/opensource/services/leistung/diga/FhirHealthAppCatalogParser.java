@@ -170,7 +170,7 @@ public class FhirHealthAppCatalogParser {
 				readValidityPeriod(catalogEntry, plainCatalogEntry);
 				readRegistrationMetaInfo(plainCatalogEntry, catalogEntry);
 
-				plainCatalogEntry.getRegistrationInfo().setAppStatus(catalogEntry.getStatus().name());
+				plainCatalogEntry.getRegistrationInfo().setAppRegistrationStatus(catalogEntry.getStatus().name());
 
 				LOG.info(
 					"Added health app: "
@@ -189,9 +189,11 @@ public class FhirHealthAppCatalogParser {
 	}
 
 	private void readValidityPeriod(CatalogEntry catalogEntry, PlainCatalogEntry diga) {
-		diga.getRegistrationInfo().setAppValidityPeriod(dateFormat.format(catalogEntry.getValidityPeriod().getStart()));
+		diga.getRegistrationInfo()
+			.setAppRegistrationStart(dateFormat.format(catalogEntry.getValidityPeriod().getStart()));
 		if (catalogEntry.getValidityPeriod().getEnd() != null) {
-			diga.getRegistrationInfo().setValidityPeriod(dateFormat.format(catalogEntry.getValidityPeriod().getEnd()));
+			diga.getRegistrationInfo()
+				.setAppRegistrationEnd(dateFormat.format(catalogEntry.getValidityPeriod().getEnd()));
 		}
 	}
 
@@ -299,7 +301,7 @@ public class FhirHealthAppCatalogParser {
 		ChargeItemDefinition item = rootDeviceOptional.get();
 
 		diga.getPrescriptionUnitInfo().setVerordnungseinheitBezeichnung(item.getTitle().trim());
-		diga.getPrescriptionUnitInfo().setVerordnungsEinheitStatus(item.getStatus().name());
+		diga.getPrescriptionUnitInfo().setPrescriptionUnitAdmissionStatus(item.getStatus().name());
 		diga.getPrescriptionUnitInfo().setPzn(item.getCode().getCodingFirstRep().getCode());
 		diga.getPrescriptionUnitInfo().setDigaVeId(item.getIdentifierFirstRep().getValue());
 
