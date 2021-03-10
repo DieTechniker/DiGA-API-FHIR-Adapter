@@ -34,10 +34,13 @@ import org.hl7.fhir.r4.model.UsageContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.tk.opensource.services.leistung.diga.type.AppInfo;
 import de.tk.opensource.services.leistung.diga.type.HealthAppCatalog;
+import de.tk.opensource.services.leistung.diga.type.ModuleInfo;
 import de.tk.opensource.services.leistung.diga.type.OrganizationInfo;
 import de.tk.opensource.services.leistung.diga.type.PlainCatalogEntry;
 import de.tk.opensource.services.leistung.diga.type.PlatformInfo;
+import de.tk.opensource.services.leistung.diga.type.PrescriptionUnitInfo;
 import de.tk.opensource.services.leistung.diga.type.PriceInfo;
 import de.tk.opensource.services.leistung.diga.type.RecordMetaInfoProvider;
 import de.tk.opensource.services.leistung.diga.type.RegistrationInfo;
@@ -146,37 +149,25 @@ public class FhirHealthAppCatalogParser {
 		return mapCatalogEntry(resource);
 	}
 
-//  public AppInfo parseDeviceDefinitionAsRootDevice(InputStream inputStream) {
-//
-//      IParser parser = fhirContext.newXmlParser();
-//      Reader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
-//      DeviceDefinition resource = parser.parseResource(DeviceDefinition.class, reader);
-//
-//      return readRootDeviceInfos(resource);
-//  }
-//
-//  public ModuleInfo parseDeviceDefinitionAsModuleDevice(InputStream inputStream) {
-//
-//      IParser parser = fhirContext.newXmlParser();
-//      Reader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
-//      DeviceDefinition resource = parser.parseResource(DeviceDefinition.class, reader);
-//
-//      return readDeviceDefinitionInfos(resource);
-//  }
-//
-//  public PrescriptionUnitInfo parseChargeItemDefinition(InputStream inputStream) {
-//
-//      IParser parser = fhirContext.newXmlParser();
-//      Reader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
-//      ChargeItemDefinition resource = parser.parseResource(ChargeItemDefinition.class, reader);
-//
-//      return readChargeItemDefinitions(resource);
-//  }
-//
-//  public PrescriptionUnitInfo parseOrganization(InputStream inputStream) {
-//      Organization resource = parseRessource(inputStream);
-//      return readOrganizations(resource);
-//  }
+	public AppInfo parseDeviceDefinitionAsRootDevice(InputStream inputStream) {
+		DeviceDefinition resource = parseRessource(inputStream, DeviceDefinition.class);
+		return mapDeviceDefinitionAsRootDevice(resource);
+	}
+
+	public ModuleInfo parseDeviceDefinitionAsModuleDevice(InputStream inputStream) {
+		DeviceDefinition resource = parseRessource(inputStream, DeviceDefinition.class);
+		return mapDeviceDefinitionAsModuleDevice(resource);
+	}
+
+	public PrescriptionUnitInfo parseChargeItemDefinition(InputStream inputStream) {
+		ChargeItemDefinition resource = parseRessource(inputStream, ChargeItemDefinition.class);
+		return mapChargeItemDefinitions(resource);
+	}
+
+	public OrganizationInfo parseOrganization(InputStream inputStream) {
+		Organization resource = parseRessource(inputStream, Organization.class);
+		return mapOrganizations(resource);
+	}
 
 	private <T extends Resource> T parseRessource(InputStream inputStream, Class<T> type) {
 		IParser parser = fhirContext.newXmlParser();
@@ -271,6 +262,8 @@ public class FhirHealthAppCatalogParser {
 		List<PlainCatalogEntry> verordnungseinheiten = new ArrayList<>();
 
 		List<DeviceDefinition> module = findHealthAppModules(rootDeviceId);
+
+		//For each module:
 		for (DeviceDefinition modul : module) {
 
 			//Find refs to chargeItemDefinitions
@@ -281,12 +274,32 @@ public class FhirHealthAppCatalogParser {
 					.map(e -> e.getValue())
 					.collect(Collectors.toList());
 
+			//For each prescription Unit (chargeItem)
 			for (Type ref : refValues) {
-				String verordnungsEinheitReference = ref.castToReference(ref).getReference();
-				PlainCatalogEntry plainCatalogEntry = readChargeItemDefinitions(verordnungsEinheitReference);
 
-				readRootDeviceInfos(rootDevice, plainCatalogEntry);
-				readDeviceDefinitionInfos(modul, plainCatalogEntry);
+				PlainCatalogEntry plainCatalogEntry = new PlainCatalogEntry();
+
+				//APP
+				plainCatalogEntry.setAppInfo(mapDeviceDefinitionAsRootDevice(rootDevice));
+
+				//Verordnungseinheit
+				String chargeItemReference = ref.castToReference(ref).getReference();
+				Optional<ChargeItemDefinition> chargeItemOptional = findChargeItemDefinition(chargeItemReference);
+				if (!chargeItemOptional.isPresent()) {
+					throw new IllegalStateException("Kein ChargeItem gefunden für: " + chargeItemReference);
+				}
+				plainCatalogEntry.setPrescriptionUnitInfo(mapChargeItemDefinitions(chargeItemOptional.get()));
+
+				//Module
+				plainCatalogEntry.setModuleInfo(mapDeviceDefinitionAsModuleDevice(modul));
+
+				//Organisation
+				String orgReference = rootDevice.getManufacturerReference().getReference();
+				Optional<Organization> organizationOptional = findOrganization(orgReference);
+				if (!organizationOptional.isPresent()) {
+					throw new IllegalStateException("Keine Organization gefunden für: " + orgReference);
+				}
+				plainCatalogEntry.setOrganizationInfo(mapOrganizations(organizationOptional.get()));
 
 				verordnungseinheiten.add(plainCatalogEntry);
 			}
@@ -295,19 +308,23 @@ public class FhirHealthAppCatalogParser {
 		return verordnungseinheiten;
 	}
 
-	private void readDeviceDefinitionInfos(DeviceDefinition modul, PlainCatalogEntry diga) {
+	private ModuleInfo mapDeviceDefinitionAsModuleDevice(DeviceDefinition modul) {
+
+		ModuleInfo moduleInfo = new ModuleInfo();
 
 		//Modulbezeichnung:
-		diga.getModuleInfo().setModulBezeichnung(modul.getDeviceNameFirstRep().getName());
+		moduleInfo.setModulBezeichnung(modul.getDeviceNameFirstRep().getName());
 
 		//Plattformen:
-		readPlattformen(modul, diga);
+		readPlattformen(modul, moduleInfo);
 
 		//Meta-Info:
-		readMetaInfo(modul, diga.getModuleInfo());
+		readMetaInfo(modul, moduleInfo);
+
+		return moduleInfo;
 	}
 
-	private void readPlattformen(DeviceDefinition modul, PlainCatalogEntry diga) {
+	private void readPlattformen(DeviceDefinition modul, ModuleInfo moduleInfo) {
 
 		for (DeviceDefinitionSpecializationComponent spec : modul.getSpecialization()) {
 
@@ -344,42 +361,41 @@ public class FhirHealthAppCatalogParser {
 
 			plattform.setLink(value == null ? "" : value.castToUri(value).asStringValue());
 			plattform.setName(spec.getSystemType() + " " + spec.getVersion());
-			diga.getModuleInfo().addPlatformInfo(plattform);
+			moduleInfo.addPlatformInfo(plattform);
 		}
 	}
 
-	private PlainCatalogEntry readChargeItemDefinitions(String deviceRef) {
+	private PrescriptionUnitInfo mapChargeItemDefinitions(ChargeItemDefinition item) {
 
-		PlainCatalogEntry diga = new PlainCatalogEntry();
+		PrescriptionUnitInfo pInfo = new PrescriptionUnitInfo();
+
+		pInfo.setVerordnungseinheitBezeichnung(item.getTitle().trim());
+		pInfo.setPrescriptionUnitAdmissionStatus(item.getStatus().name());
+		pInfo.setPzn(item.getCode().getCodingFirstRep().getCode());
+		pInfo.setDigaVeId(item.getIdentifierFirstRep().getValue());
+
+		readAltersgruppen(pInfo, item);
+		readAnwendungsdauer(pInfo, item);
+		readIndikationen(pInfo, item);
+		readKontraIndikationen(pInfo, item);
+		readAusschlusskriterien(pInfo, item);
+
+		readNichtErstattungsFaehigeKosten(pInfo, item);
+		readVertragsaerztlicheLeistungen(pInfo, item);
+
+		readPreis(pInfo, item);
+		readMetaInfo(item, pInfo);
+
+		return pInfo;
+	}
+
+	private Optional<ChargeItemDefinition> findChargeItemDefinition(String deviceRef) {
 
 		//Find charge item with ref:
-		Optional<ChargeItemDefinition> rootDeviceOptional =
+		Optional<ChargeItemDefinition> chargeItemOptional =
 			chargeItemDefinitionList.stream().filter(d -> d.getId().contains(deviceRef)).findAny();
 
-		if (!rootDeviceOptional.isPresent()) {
-			throw new IllegalStateException("Kein Root-Device gefunden für: " + deviceRef);
-		}
-
-		ChargeItemDefinition item = rootDeviceOptional.get();
-
-		diga.getPrescriptionUnitInfo().setVerordnungseinheitBezeichnung(item.getTitle().trim());
-		diga.getPrescriptionUnitInfo().setPrescriptionUnitAdmissionStatus(item.getStatus().name());
-		diga.getPrescriptionUnitInfo().setPzn(item.getCode().getCodingFirstRep().getCode());
-		diga.getPrescriptionUnitInfo().setDigaVeId(item.getIdentifierFirstRep().getValue());
-
-		readAltersgruppen(diga, item);
-		readAnwendungsdauer(diga, item);
-		readIndikationen(diga, item);
-		readKontraIndikationen(diga, item);
-		readAusschlusskriterien(diga, item);
-
-		readNichtErstattungsFaehigeKosten(diga, item);
-		readVertragsaerztlicheLeistungen(diga, item);
-
-		readPreis(diga, item);
-		readMetaInfo(item, diga.getPrescriptionUnitInfo());
-
-		return diga;
+		return chargeItemOptional;
 	}
 
 	private <I extends RecordMetaInfoProvider> void readMetaInfo(DomainResource item, I info) {
@@ -389,7 +405,7 @@ public class FhirHealthAppCatalogParser {
 		info.getMetaInfo().setFhirRessourceId(item.castToResource(item).getIdElement().getIdPart());
 	}
 
-	private void readAltersgruppen(PlainCatalogEntry diga, ChargeItemDefinition item) {
+	private void readAltersgruppen(PrescriptionUnitInfo pInfo, ChargeItemDefinition item) {
 
 		List<UsageContext> ageGroups =
 			item.getUseContext()
@@ -398,21 +414,19 @@ public class FhirHealthAppCatalogParser {
 				.collect(Collectors.toList());
 
 		for (UsageContext ageGroup : ageGroups) {
-			diga.getPrescriptionUnitInfo()
-				.addAltersgruppe(ageGroup.getValueCodeableConcept().getCodingFirstRep().getCode());
+			pInfo.addAltersgruppe(ageGroup.getValueCodeableConcept().getCodingFirstRep().getCode());
 		}
 
 		List<Extension> altersGruppenExtensions =
 			item.getExtensionsByUrl(FhirHealthAppURIs.HEALTH_APP_PRESCRIPTION_UNIT_ALTERSGRUPPE);
 
 		for (Extension extension : altersGruppenExtensions) {
-			diga.getPrescriptionUnitInfo()
-				.addAltersgruppe(extension.getValue().castToCode(extension.getValue()).asStringValue());
+			pInfo.addAltersgruppe(extension.getValue().castToCode(extension.getValue()).asStringValue());
 		}
 
 	}
 
-	private void readPreis(PlainCatalogEntry diga, ChargeItemDefinition item) {
+	private void readPreis(PrescriptionUnitInfo pInfo, ChargeItemDefinition item) {
 
 		PriceInfo preisinfo = new PriceInfo();
 
@@ -422,23 +436,22 @@ public class FhirHealthAppCatalogParser {
 		preisinfo.setWaehrung(amount.getCurrency());
 		preisinfo.setTyp(PriceInfo.Typ.BRUTTO);
 
-		diga.getPrescriptionUnitInfo().setPreisinfo(preisinfo);
+		pInfo.setPreisinfo(preisinfo);
 	}
 
-	private void readVertragsaerztlicheLeistungen(PlainCatalogEntry diga, ChargeItemDefinition item) {
+	private void readVertragsaerztlicheLeistungen(PrescriptionUnitInfo pInfo, ChargeItemDefinition item) {
 
 		Extension vertragsaerztlicheLeistungenExtension =
 			item.getExtensionByUrl(FhirHealthAppURIs.HEALTH_APP_PRESCRIPTION_UNIT_VERTRAGSAERZTLICHE_LEISTUNGEN);
 
 		if (vertragsaerztlicheLeistungenExtension != null) {
 			Type required = vertragsaerztlicheLeistungenExtension.getExtensionByUrl("required").getValue();
-			diga.getPrescriptionUnitInfo()
-				.setVertragsaerztlicheLeistungen(required.castToBoolean(required).booleanValue());
+			pInfo.setVertragsaerztlicheLeistungen(required.castToBoolean(required).booleanValue());
 		}
 
 	}
 
-	private void readNichtErstattungsFaehigeKosten(PlainCatalogEntry diga, ChargeItemDefinition item) {
+	private void readNichtErstattungsFaehigeKosten(PrescriptionUnitInfo pInfo, ChargeItemDefinition item) {
 
 		Extension nichtErstattungsFaehigeKostenExtension =
 			item.getExtensionByUrl(FhirHealthAppURIs.HEALTH_APP_PRESCRIPTION_UNIT_NICHT_ERSTATTUNGSFAEHIGE_KOSTEN);
@@ -449,7 +462,7 @@ public class FhirHealthAppCatalogParser {
 			// -> NichtErstattungsfaehigeKosten required true = Alle Kosten sind erstattungsfähig
 			// -> NichtErstattungsfaehigeKosten required false = Es gibt Kosten, die nicht erstattungsfähig sind (es wird zusätzlich eine Beschreibung angegeben)
 
-			diga.getPrescriptionUnitInfo()
+			pInfo
 				.getNichtErstattungsfaehigeKostenHinweis()
 				.setNichtErstattungsfaehigeKostenEnthalten(!required.castToBoolean(required).getValue());
 		}
@@ -460,14 +473,12 @@ public class FhirHealthAppCatalogParser {
 
 		if (descriptionExtension != null) {
 			Type desc = descriptionExtension.getValue();
-			diga.getPrescriptionUnitInfo()
-				.getNichtErstattungsfaehigeKostenHinweis()
-				.setHinweis(desc.castToString(desc).asStringValue());
+			pInfo.getNichtErstattungsfaehigeKostenHinweis().setHinweis(desc.castToString(desc).asStringValue());
 		}
 
 	}
 
-	private void readAusschlusskriterien(PlainCatalogEntry diga, ChargeItemDefinition item) {
+	private void readAusschlusskriterien(PrescriptionUnitInfo pInfo, ChargeItemDefinition item) {
 
 		if (item.getExtensionByUrl(FhirHealthAppURIs.HEALTH_APP_PRESCRIPTION_UNIT_KONTRAINDIKATION) != null) {
 
@@ -479,14 +490,12 @@ public class FhirHealthAppCatalogParser {
 					.collect(Collectors.toList());
 
 			for (Type kriterium : ausschlussKriterienTypes) {
-				diga.getPrescriptionUnitInfo()
-					.getContraIndicationInfo()
-					.addDisqualifier(kriterium.castToString(kriterium).getValue());
+				pInfo.getContraIndicationInfo().addDisqualifier(kriterium.castToString(kriterium).getValue());
 			}
 		}
 	}
 
-	private void readKontraIndikationen(PlainCatalogEntry diga, ChargeItemDefinition item) {
+	private void readKontraIndikationen(PrescriptionUnitInfo pInfo, ChargeItemDefinition item) {
 
 		if (item.getExtensionByUrl(FhirHealthAppURIs.HEALTH_APP_PRESCRIPTION_UNIT_KONTRAINDIKATION) != null) {
 
@@ -497,13 +506,13 @@ public class FhirHealthAppCatalogParser {
 			for (Type diagnose : indikationenTypes) {
 				Optional<Coding> coding = diagnose.castToCodeableConcept(diagnose).getCoding().stream().findFirst();
 				if (coding.isPresent()) {
-					diga.getPrescriptionUnitInfo().getContraIndicationInfo().addIndication(coding.get().getCode());
+					pInfo.getContraIndicationInfo().addIndication(coding.get().getCode());
 				}
 			}
 		}
 	}
 
-	private void readIndikationen(PlainCatalogEntry diga, ChargeItemDefinition item) {
+	private void readIndikationen(PrescriptionUnitInfo pInfo, ChargeItemDefinition item) {
 
 		if (item.getExtensionByUrl(FhirHealthAppURIs.HEALTH_APP_PRESCRIPTION_UNIT_INDIKATION) != null) {
 
@@ -514,23 +523,24 @@ public class FhirHealthAppCatalogParser {
 			for (Type diagnose : indikationenTypes) {
 				Optional<Coding> coding = diagnose.castToCodeableConcept(diagnose).getCoding().stream().findFirst();
 				if (coding.isPresent()) {
-					diga.getPrescriptionUnitInfo().getIndicationInfo().addIndication(coding.get().getCode());
+					pInfo.getIndicationInfo().addIndication(coding.get().getCode());
 				}
 			}
 		}
 	}
 
-	private void readAnwendungsdauer(PlainCatalogEntry diga, ChargeItemDefinition item) {
+	private void readAnwendungsdauer(PrescriptionUnitInfo pInfo, ChargeItemDefinition item) {
 		Type anwendungsdauer =
 			item.getExtensionByUrl(FhirHealthAppURIs.HEALTH_APP_PRESCRIPTION_UNIT_ANWENDUNGSDAUER).getValue();
-		diga.getPrescriptionUnitInfo()
-			.setAnwendungsTage(anwendungsdauer.castToDuration(anwendungsdauer).getValue().intValue());
+		pInfo.setAnwendungsTage(anwendungsdauer.castToDuration(anwendungsdauer).getValue().intValue());
 	}
 
-	private void readRootDeviceInfos(DeviceDefinition rootDevice, PlainCatalogEntry diga) {
+	private AppInfo mapDeviceDefinitionAsRootDevice(DeviceDefinition rootDevice) {
+
+		AppInfo appInfo = new AppInfo();
 
 		//App-Name:
-		diga.getAppInfo().setAppName(rootDevice.getDeviceNameFirstRep().getName());
+		appInfo.setAppName(rootDevice.getDeviceNameFirstRep().getName());
 
 		//Höchstdauer:
 		Type hoechstDauer =
@@ -538,7 +548,7 @@ public class FhirHealthAppCatalogParser {
 				.getExtensionByUrl(FhirHealthAppURIs.HEALTH_APP_NUTZUNGSHINWEIS)
 				.getExtensionByUrl("hoechtsdauer")
 				.getValue();
-		diga.getAppInfo().setHoechstDauer(hoechstDauer.castToString(hoechstDauer).asStringValue());
+		appInfo.setHoechstDauer(hoechstDauer.castToString(hoechstDauer).asStringValue());
 
 		//Mindestdauer:
 		Type mindestDauer =
@@ -546,11 +556,11 @@ public class FhirHealthAppCatalogParser {
 				.getExtensionByUrl(FhirHealthAppURIs.HEALTH_APP_NUTZUNGSHINWEIS)
 				.getExtensionByUrl("mindestdauer")
 				.getValue();
-		diga.getAppInfo().setMindestDauer(mindestDauer.castToString(mindestDauer).asStringValue());
+		appInfo.setMindestDauer(mindestDauer.castToString(mindestDauer).asStringValue());
 
 		//Zweckbestimmung:
 		Type zweckBestimmung = rootDevice.getExtensionByUrl(FhirHealthAppURIs.HEALTH_APP_ZWECKBESTIMMUNG).getValue();
-		diga.getAppInfo().setBeschreibung(zweckBestimmung.castToString(zweckBestimmung).asStringValue());
+		appInfo.setBeschreibung(zweckBestimmung.castToString(zweckBestimmung).asStringValue());
 
 		//DiGA-ID:
 		String digaId =
@@ -562,37 +572,28 @@ public class FhirHealthAppCatalogParser {
 				.findAny()
 				.orElse("0");
 
-		diga.getAppInfo().setDigaId(String.format("%05d", Integer.parseInt(digaId)));
-
-		//Organizations:
-		readOrganizations(rootDevice, diga);
+		appInfo.setDigaId(String.format("%05d", Integer.parseInt(digaId)));
 
 		//Homepage:
-		diga.getAppInfo().setHomepage(rootDevice.getOnlineInformation());
+		appInfo.setHomepage(rootDevice.getOnlineInformation());
 
 		//MetaInfos:
-		readMetaInfo(rootDevice, diga.getAppInfo());
+		readMetaInfo(rootDevice, appInfo);
 
+		return appInfo;
 	}
 
-	private void readOrganizations(DeviceDefinition rootDevice, PlainCatalogEntry diga) {
+	private OrganizationInfo mapOrganizations(Organization organization) {
 
-		String reference = rootDevice.getManufacturerReference().getReference();
-		Optional<Organization> organization = findOrganization(reference);
+		OrganizationInfo orgInfo = new OrganizationInfo();
 
-		if (!organization.isPresent()) {
-			throw new IllegalStateException("Keine Organization gefunden für: " + reference);
-		}
+		orgInfo.setIk(organization.getIdentifierFirstRep().getValue());
+		orgInfo.setName(organization.getName());
+		orgInfo.setStandort(organization.getAddressFirstRep().getCity());
 
-		OrganizationInfo org = new OrganizationInfo();
+		readMetaInfo(organization, orgInfo);
 
-		org.setIk(organization.get().getIdentifierFirstRep().getValue());
-		org.setName(organization.get().getName());
-		org.setStandort(organization.get().getAddressFirstRep().getCity());
-
-		diga.setOrganizationInfo(org);
-
-		readMetaInfo(organization.get(), diga.getOrganizationInfo());
+		return orgInfo;
 	}
 
 }
