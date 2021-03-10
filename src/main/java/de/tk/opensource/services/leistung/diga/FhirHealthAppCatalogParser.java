@@ -28,6 +28,7 @@ import org.hl7.fhir.r4.model.DomainResource;
 import org.hl7.fhir.r4.model.Extension;
 import org.hl7.fhir.r4.model.Money;
 import org.hl7.fhir.r4.model.Organization;
+import org.hl7.fhir.r4.model.Resource;
 import org.hl7.fhir.r4.model.Type;
 import org.hl7.fhir.r4.model.UsageContext;
 import org.slf4j.Logger;
@@ -39,6 +40,7 @@ import de.tk.opensource.services.leistung.diga.type.PlainCatalogEntry;
 import de.tk.opensource.services.leistung.diga.type.PlatformInfo;
 import de.tk.opensource.services.leistung.diga.type.PriceInfo;
 import de.tk.opensource.services.leistung.diga.type.RecordMetaInfoProvider;
+import de.tk.opensource.services.leistung.diga.type.RegistrationInfo;
 
 public class FhirHealthAppCatalogParser {
 
@@ -72,40 +74,49 @@ public class FhirHealthAppCatalogParser {
 
 	public FhirHealthAppCatalogParser withCatalogEntriesInput(InputStream inputStream) {
 
-		IParser parser = fhirContext.newXmlParser();
-		Reader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
-		Bundle bundle = parser.parseResource(Bundle.class, reader);
-		catalogEntryList.addAll(BundleUtil.toListOfResourcesOfType(fhirContext, bundle, CatalogEntry.class));
-
+		catalogEntryList.addAll(
+			BundleUtil.toListOfResourcesOfType(
+				fhirContext,
+				parseRessource(inputStream, Bundle.class),
+				CatalogEntry.class
+			)
+		);
 		return this;
 	}
 
 	public FhirHealthAppCatalogParser withDeviceDefinitionsInput(InputStream inputStream) {
-		IParser parser = fhirContext.newXmlParser();
-		Reader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
-		Bundle bundle = parser.parseResource(Bundle.class, reader);
-		deviceDefinitionList.addAll(BundleUtil.toListOfResourcesOfType(fhirContext, bundle, DeviceDefinition.class));
 
+		deviceDefinitionList.addAll(
+			BundleUtil.toListOfResourcesOfType(
+				fhirContext,
+				parseRessource(inputStream, Bundle.class),
+				DeviceDefinition.class
+			)
+		);
 		return this;
 	}
 
 	public FhirHealthAppCatalogParser withChargeItemsInput(InputStream inputStream) {
-		IParser parser = fhirContext.newXmlParser();
-		Reader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
-		Bundle bundle = parser.parseResource(Bundle.class, reader);
-		chargeItemDefinitionList.addAll(
-			BundleUtil.toListOfResourcesOfType(fhirContext, bundle, ChargeItemDefinition.class)
-		);
 
+		chargeItemDefinitionList.addAll(
+			BundleUtil.toListOfResourcesOfType(
+				fhirContext,
+				parseRessource(inputStream, Bundle.class),
+				ChargeItemDefinition.class
+			)
+		);
 		return this;
 	}
 
 	public FhirHealthAppCatalogParser withOrganizationsInput(InputStream inputStream) {
-		IParser parser = fhirContext.newXmlParser();
-		Reader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
-		Bundle bundle = parser.parseResource(Bundle.class, reader);
-		organizationList.addAll(BundleUtil.toListOfResourcesOfType(fhirContext, bundle, Organization.class));
 
+		organizationList.addAll(
+			BundleUtil.toListOfResourcesOfType(
+				fhirContext,
+				parseRessource(inputStream, Bundle.class),
+				Organization.class
+			)
+		);
 		return this;
 	}
 
@@ -128,6 +139,50 @@ public class FhirHealthAppCatalogParser {
 
 		return healthAppCatalog;
 
+	}
+
+	public RegistrationInfo parseCatalogEntry(InputStream inputStream) {
+		CatalogEntry resource = parseRessource(inputStream, CatalogEntry.class);
+		return mapCatalogEntry(resource);
+	}
+
+//  public AppInfo parseDeviceDefinitionAsRootDevice(InputStream inputStream) {
+//
+//      IParser parser = fhirContext.newXmlParser();
+//      Reader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
+//      DeviceDefinition resource = parser.parseResource(DeviceDefinition.class, reader);
+//
+//      return readRootDeviceInfos(resource);
+//  }
+//
+//  public ModuleInfo parseDeviceDefinitionAsModuleDevice(InputStream inputStream) {
+//
+//      IParser parser = fhirContext.newXmlParser();
+//      Reader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
+//      DeviceDefinition resource = parser.parseResource(DeviceDefinition.class, reader);
+//
+//      return readDeviceDefinitionInfos(resource);
+//  }
+//
+//  public PrescriptionUnitInfo parseChargeItemDefinition(InputStream inputStream) {
+//
+//      IParser parser = fhirContext.newXmlParser();
+//      Reader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
+//      ChargeItemDefinition resource = parser.parseResource(ChargeItemDefinition.class, reader);
+//
+//      return readChargeItemDefinitions(resource);
+//  }
+//
+//  public PrescriptionUnitInfo parseOrganization(InputStream inputStream) {
+//      Organization resource = parseRessource(inputStream);
+//      return readOrganizations(resource);
+//  }
+
+	private <T extends Resource> T parseRessource(InputStream inputStream, Class<T> type) {
+		IParser parser = fhirContext.newXmlParser();
+		Reader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
+
+		return parser.parseResource(type, reader);
 	}
 
 	private Optional<DeviceDefinition> findRootDevice(String rootDeviceId) {
@@ -169,12 +224,7 @@ public class FhirHealthAppCatalogParser {
 			//Add general app infos (from CatalogEntries):
 			for (PlainCatalogEntry plainCatalogEntry : plainCatalogEntries) {
 
-				readValidityPeriod(catalogEntry, plainCatalogEntry);
-
-				//readRegistrationMetaInfo(plainCatalogEntry, catalogEntry);
-				readMetaInfo(catalogEntry, plainCatalogEntry.getRegistrationInfo());
-
-				plainCatalogEntry.getRegistrationInfo().setAppRegistrationStatus(catalogEntry.getStatus().name());
+				plainCatalogEntry.setRegistrationInfo(mapCatalogEntry(catalogEntry));
 
 				LOG.info(
 					"Added health app: "
@@ -192,12 +242,20 @@ public class FhirHealthAppCatalogParser {
 		}
 	}
 
-	private void readValidityPeriod(CatalogEntry catalogEntry, PlainCatalogEntry diga) {
-		diga.getRegistrationInfo()
-			.setAppRegistrationStart(dateFormat.format(catalogEntry.getValidityPeriod().getStart()));
+	private RegistrationInfo mapCatalogEntry(CatalogEntry catalogEntry) {
+
+		RegistrationInfo regInfo = new RegistrationInfo();
+		readValidityPeriod(catalogEntry, regInfo);
+		readMetaInfo(catalogEntry, regInfo);
+		regInfo.setAppRegistrationStatus(catalogEntry.getStatus().name());
+
+		return regInfo;
+	}
+
+	private void readValidityPeriod(CatalogEntry catalogEntry, RegistrationInfo regInfo) {
+		regInfo.setAppRegistrationStart(dateFormat.format(catalogEntry.getValidityPeriod().getStart()));
 		if (catalogEntry.getValidityPeriod().getEnd() != null) {
-			diga.getRegistrationInfo()
-				.setAppRegistrationEnd(dateFormat.format(catalogEntry.getValidityPeriod().getEnd()));
+			regInfo.setAppRegistrationEnd(dateFormat.format(catalogEntry.getValidityPeriod().getEnd()));
 		}
 	}
 
