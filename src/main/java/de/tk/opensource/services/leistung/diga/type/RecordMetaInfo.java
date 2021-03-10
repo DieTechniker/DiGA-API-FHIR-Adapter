@@ -6,6 +6,8 @@ public class RecordMetaInfo {
 
 	private String letzteAenderung;
 	private String version;
+	private String fhirRessourceId;
+	private String fhirRessourcePath;
 
 	public String getLetzteAenderung() {
 		return letzteAenderung;
@@ -21,6 +23,22 @@ public class RecordMetaInfo {
 
 	public void setVersion(String version) {
 		this.version = version;
+	}
+
+	public String getFhirRessourceId() {
+		return fhirRessourceId;
+	}
+
+	public void setFhirRessourceId(String fhirRessourceId) {
+		this.fhirRessourceId = fhirRessourceId;
+	}
+
+	public String getFhirRessourcePath() {
+		return fhirRessourcePath;
+	}
+
+	public void setFhirRessourcePath(String fhirRessourcePath) {
+		this.fhirRessourcePath = fhirRessourcePath;
 	}
 
 }

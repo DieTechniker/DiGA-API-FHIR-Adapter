@@ -24,6 +24,7 @@ import org.hl7.fhir.r4.model.ChargeItemDefinition;
 import org.hl7.fhir.r4.model.Coding;
 import org.hl7.fhir.r4.model.DeviceDefinition;
 import org.hl7.fhir.r4.model.DeviceDefinition.DeviceDefinitionSpecializationComponent;
+import org.hl7.fhir.r4.model.DomainResource;
 import org.hl7.fhir.r4.model.Extension;
 import org.hl7.fhir.r4.model.Money;
 import org.hl7.fhir.r4.model.Organization;
@@ -37,6 +38,7 @@ import de.tk.opensource.services.leistung.diga.type.OrganizationInfo;
 import de.tk.opensource.services.leistung.diga.type.PlainCatalogEntry;
 import de.tk.opensource.services.leistung.diga.type.PlatformInfo;
 import de.tk.opensource.services.leistung.diga.type.PriceInfo;
+import de.tk.opensource.services.leistung.diga.type.RecordMetaInfoProvider;
 
 public class FhirHealthAppCatalogParser {
 
@@ -168,7 +170,9 @@ public class FhirHealthAppCatalogParser {
 			for (PlainCatalogEntry plainCatalogEntry : plainCatalogEntries) {
 
 				readValidityPeriod(catalogEntry, plainCatalogEntry);
-				readRegistrationMetaInfo(plainCatalogEntry, catalogEntry);
+
+				//readRegistrationMetaInfo(plainCatalogEntry, catalogEntry);
+				readMetaInfo(catalogEntry, plainCatalogEntry.getRegistrationInfo());
 
 				plainCatalogEntry.getRegistrationInfo().setAppRegistrationStatus(catalogEntry.getStatus().name());
 
@@ -242,7 +246,7 @@ public class FhirHealthAppCatalogParser {
 		readPlattformen(modul, diga);
 
 		//Meta-Info:
-		readModulMetaInfo(diga, modul);
+		readMetaInfo(modul, diga.getModuleInfo());
 	}
 
 	private void readPlattformen(DeviceDefinition modul, PlainCatalogEntry diga) {
@@ -315,40 +319,16 @@ public class FhirHealthAppCatalogParser {
 		readVertragsaerztlicheLeistungen(diga, item);
 
 		readPreis(diga, item);
-		readVerordnungseinheitMetaInfo(diga, item);
+		readMetaInfo(item, diga.getPrescriptionUnitInfo());
 
 		return diga;
 	}
 
-	private void readRegistrationMetaInfo(PlainCatalogEntry diga, CatalogEntry item) {
-		diga.getRegistrationInfo().getMetaInfo().setVersion(item.getMeta().getVersionId());
-		diga.getRegistrationInfo()
-			.getMetaInfo()
-			.setLetzteAenderung(dateTimeFormat.format(item.getMeta().getLastUpdated()));
-	}
-
-	private void readAppMetaInfo(PlainCatalogEntry diga, DeviceDefinition item) {
-		diga.getAppInfo().getMetaInfo().setVersion(item.getMeta().getVersionId());
-		diga.getAppInfo().getMetaInfo().setLetzteAenderung(dateTimeFormat.format(item.getMeta().getLastUpdated()));
-	}
-
-	private void readModulMetaInfo(PlainCatalogEntry diga, DeviceDefinition item) {
-		diga.getModuleInfo().getMetaInfo().setVersion(item.getMeta().getVersionId());
-		diga.getModuleInfo().getMetaInfo().setLetzteAenderung(dateTimeFormat.format(item.getMeta().getLastUpdated()));
-	}
-
-	private void readVerordnungseinheitMetaInfo(PlainCatalogEntry diga, ChargeItemDefinition item) {
-		diga.getPrescriptionUnitInfo().getMetaInfo().setVersion(item.getMeta().getVersionId());
-		diga.getPrescriptionUnitInfo()
-			.getMetaInfo()
-			.setLetzteAenderung(dateTimeFormat.format(item.getMeta().getLastUpdated()));
-	}
-
-	private void readOrganizationMetaInfo(PlainCatalogEntry diga, Organization item) {
-		diga.getOrganizationInfo().getMetaInfo().setVersion(item.getMeta().getVersionId());
-		diga.getOrganizationInfo()
-			.getMetaInfo()
-			.setLetzteAenderung(dateTimeFormat.format(item.getMeta().getLastUpdated()));
+	private <I extends RecordMetaInfoProvider> void readMetaInfo(DomainResource item, I info) {
+		info.getMetaInfo().setVersion(item.getMeta().getVersionId());
+		info.getMetaInfo().setLetzteAenderung(dateTimeFormat.format(item.getMeta().getLastUpdated()));
+		info.getMetaInfo().setFhirRessourcePath(item.getId());
+		info.getMetaInfo().setFhirRessourceId(item.castToResource(item).getIdElement().getIdPart());
 	}
 
 	private void readAltersgruppen(PlainCatalogEntry diga, ChargeItemDefinition item) {
@@ -527,17 +507,17 @@ public class FhirHealthAppCatalogParser {
 		diga.getAppInfo().setDigaId(String.format("%05d", Integer.parseInt(digaId)));
 
 		//Organizations:
-		readAppHersteller(rootDevice, diga);
+		readOrganizations(rootDevice, diga);
 
 		//Homepage:
 		diga.getAppInfo().setHomepage(rootDevice.getOnlineInformation());
 
 		//MetaInfos:
-		readAppMetaInfo(diga, rootDevice);
+		readMetaInfo(rootDevice, diga.getAppInfo());
 
 	}
 
-	private void readAppHersteller(DeviceDefinition rootDevice, PlainCatalogEntry diga) {
+	private void readOrganizations(DeviceDefinition rootDevice, PlainCatalogEntry diga) {
 
 		String reference = rootDevice.getManufacturerReference().getReference();
 		Optional<Organization> organization = findOrganization(reference);
@@ -554,7 +534,7 @@ public class FhirHealthAppCatalogParser {
 
 		diga.setOrganizationInfo(org);
 
-		readOrganizationMetaInfo(diga, organization.get());
+		readMetaInfo(organization.get(), diga.getOrganizationInfo());
 	}
 
 }
