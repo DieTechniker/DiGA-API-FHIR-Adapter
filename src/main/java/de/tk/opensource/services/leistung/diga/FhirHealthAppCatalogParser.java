@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.hl7.fhir.exceptions.FHIRException;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.CatalogEntry;
 import org.hl7.fhir.r4.model.ChargeItemDefinition;
@@ -432,11 +433,14 @@ public class FhirHealthAppCatalogParser {
 
 		Money amount = item.getPropertyGroupFirstRep().getPriceComponentFirstRep().getAmount();
 
-		preisinfo.setPreis(amount.getValue().doubleValue());
-		preisinfo.setWaehrung(amount.getCurrency());
-		preisinfo.setTyp(PriceInfo.Typ.BRUTTO);
+		if (amount != null && amount.getValue() != null) {
 
-		pInfo.setPreisinfo(preisinfo);
+			preisinfo.setPreis(amount.getValue().doubleValue());
+			preisinfo.setWaehrung(amount.getCurrency());
+			preisinfo.setTyp(PriceInfo.Typ.BRUTTO);
+
+			pInfo.setPreisinfo(preisinfo);
+		}
 	}
 
 	private void readVertragsaerztlicheLeistungen(PrescriptionUnitInfo pInfo, ChargeItemDefinition item) {
@@ -504,9 +508,17 @@ public class FhirHealthAppCatalogParser {
 					.getExtensionsByUrl("diagnose").stream().map(e -> e.getValue()).collect(Collectors.toList());
 
 			for (Type diagnose : indikationenTypes) {
-				Optional<Coding> coding = diagnose.castToCodeableConcept(diagnose).getCoding().stream().findFirst();
-				if (coding.isPresent()) {
-					pInfo.getContraIndicationInfo().addIndication(coding.get().getCode());
+				Coding coding;
+
+				//Indications can occur as "Coding" or "CodeableConcept" in FHIR
+				try {
+					coding = diagnose.castToCodeableConcept(diagnose).getCoding().stream().findFirst().orElse(null);
+				} catch (FHIRException e) {
+					coding = diagnose.castToCoding(diagnose);
+				}
+
+				if (coding != null) {
+					pInfo.getContraIndicationInfo().addIndication(coding.getCode());
 				}
 			}
 		}
@@ -521,18 +533,34 @@ public class FhirHealthAppCatalogParser {
 					.getExtensionsByUrl("diagnose").stream().map(e -> e.getValue()).collect(Collectors.toList());
 
 			for (Type diagnose : indikationenTypes) {
-				Optional<Coding> coding = diagnose.castToCodeableConcept(diagnose).getCoding().stream().findFirst();
-				if (coding.isPresent()) {
-					pInfo.getIndicationInfo().addIndication(coding.get().getCode());
+				Coding coding;
+
+				//Indications can occur as "Coding" or "CodeableConcept" in FHIR
+				try {
+					coding = diagnose.castToCodeableConcept(diagnose).getCoding().stream().findFirst().orElse(null);
+				} catch (FHIRException e) {
+					coding = diagnose.castToCoding(diagnose);
+				}
+
+				if (coding != null) {
+					pInfo.getIndicationInfo().addIndication(coding.getCode());
 				}
 			}
+
 		}
 	}
 
 	private void readAnwendungsdauer(PrescriptionUnitInfo pInfo, ChargeItemDefinition item) {
-		Type anwendungsdauer =
-			item.getExtensionByUrl(FhirHealthAppURIs.HEALTH_APP_PRESCRIPTION_UNIT_ANWENDUNGSDAUER).getValue();
-		pInfo.setAnwendungsTage(anwendungsdauer.castToDuration(anwendungsdauer).getValue().intValue());
+		Extension anwendungsDauerExtension =
+			item.getExtensionByUrl(FhirHealthAppURIs.HEALTH_APP_PRESCRIPTION_UNIT_ANWENDUNGSDAUER);
+
+		if (anwendungsDauerExtension != null) {
+			Type anwendungsdauer = anwendungsDauerExtension.getValue();
+
+			if (anwendungsdauer != null) {
+				pInfo.setAnwendungsTage(anwendungsdauer.castToDuration(anwendungsdauer).getValue().intValue());
+			}
+		}
 	}
 
 	private AppInfo mapDeviceDefinitionAsRootDevice(DeviceDefinition rootDevice) {

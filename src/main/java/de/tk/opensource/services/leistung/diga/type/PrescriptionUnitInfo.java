@@ -14,7 +14,7 @@ public class PrescriptionUnitInfo implements RecordMetaInfoProvider {
 	private IndicationInfo indicationInfo;
 	private ContraIndicationInfo contraIndicationInfo;
 	private Set<String> altersgruppen;
-	private int anwendungsTage;
+	private Integer anwendungsTage;
 	private PriceInfo preisinfo;
 	private String prescriptionUnitAdmissionStatus;
 	private Boolean vertragsaerztlicheLeistungen;
@@ -90,11 +90,11 @@ public class PrescriptionUnitInfo implements RecordMetaInfoProvider {
 		this.altersgruppen.add(altersgruppen);
 	}
 
-	public int getAnwendungsTage() {
+	public Integer getAnwendungsTage() {
 		return anwendungsTage;
 	}
 
-	public void setAnwendungsTage(int anwendungsTage) {
+	public void setAnwendungsTage(Integer anwendungsTage) {
 		this.anwendungsTage = anwendungsTage;
 	}
 

@@ -8,14 +8,14 @@ public class PlainCatalogEntry {
 	private AppInfo appInfo;
 	private OrganizationInfo organizationInfo;
 	private ModuleInfo moduleInfo;
-	private PrescriptionUnitInfo chageItemDefinition;
+	private PrescriptionUnitInfo prescriptionUnitInfo;
 
 	public PlainCatalogEntry() {
 		registrationInfo = new RegistrationInfo();
 		appInfo = new AppInfo();
 		organizationInfo = new OrganizationInfo();
 		moduleInfo = new ModuleInfo();
-		chageItemDefinition = new PrescriptionUnitInfo();
+		prescriptionUnitInfo = new PrescriptionUnitInfo();
 	}
 
 	public RegistrationInfo getRegistrationInfo() {
@@ -51,11 +51,11 @@ public class PlainCatalogEntry {
 	}
 
 	public PrescriptionUnitInfo getPrescriptionUnitInfo() {
-		return chageItemDefinition;
+		return prescriptionUnitInfo;
 	}
 
 	public void setPrescriptionUnitInfo(PrescriptionUnitInfo chageItemDefinition) {
-		this.chageItemDefinition = chageItemDefinition;
+		this.prescriptionUnitInfo = chageItemDefinition;
 	}
 
 	public String getVersionString() {
