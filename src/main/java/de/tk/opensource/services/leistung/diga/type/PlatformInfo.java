@@ -5,7 +5,7 @@ package de.tk.opensource.services.leistung.diga.type;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Plattform {
+public class PlatformInfo {
 
 	private String name;
 	private String link;

@@ -2,10 +2,10 @@
 
 package de.tk.opensource.services.leistung.diga.type;
 
-public class Preisinfo {
+public class PriceInfo {
 
 	public enum Typ {
-		brutto, netto
+		BRUTTO, NETTO
 	}
 
 	private double preis;
@@ -34,6 +34,11 @@ public class Preisinfo {
 
 	public void setTyp(Typ typ) {
 		this.typ = typ;
+	}
+
+	@Override
+	public String toString() {
+		return "PriceInfo [preis=" + preis + ", waehrung=" + waehrung + ", typ=" + typ + "]";
 	}
 
 }

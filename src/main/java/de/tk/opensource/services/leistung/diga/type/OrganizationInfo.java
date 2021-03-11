@@ -2,11 +2,25 @@
 
 package de.tk.opensource.services.leistung.diga.type;
 
-public class Hersteller {
+public class OrganizationInfo implements RecordMetaInfoProvider {
 
+	private RecordMetaInfo metaInfo;
 	private String ik;
 	private String name;
 	private String standort;
+
+	public OrganizationInfo() {
+		this.metaInfo = new RecordMetaInfo();
+	}
+
+	@Override
+	public RecordMetaInfo getMetaInfo() {
+		return metaInfo;
+	}
+
+	public void setMetaInfo(RecordMetaInfo metaInfo) {
+		this.metaInfo = metaInfo;
+	}
 
 	public String getIk() {
 		return ik;

@@ -2,7 +2,7 @@
 
 package de.tk.opensource.services.leistung.diga;
 
-public class FhirDigaURIs {
+public class FhirHealthAppURIs {
 
 	/**
 	 * Namespace, der XML Zielstruktur des Diga-Verzeichnisses.

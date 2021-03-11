@@ -23,11 +23,11 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import de.tk.opensource.services.leistung.diga.type.DigaVerzeichnis;
+import de.tk.opensource.services.leistung.diga.type.HealthAppCatalog;
 
-public class DigaFhirVerzeichnisRequester {
+public class FhirHealthAppCatalogRequester {
 
-	private static final Logger LOG = LoggerFactory.getLogger(DigaFhirVerzeichnisRequester.class);
+	private static final Logger LOG = LoggerFactory.getLogger(FhirHealthAppCatalogRequester.class);
 
 	private static String inputDir;
 
@@ -66,7 +66,7 @@ public class DigaFhirVerzeichnisRequester {
 			printHelp();
 		}
 
-		new DigaFhirVerzeichnisRequester().run();
+		new FhirHealthAppCatalogRequester().run();
 	}
 
 	public void run() {
@@ -86,9 +86,9 @@ public class DigaFhirVerzeichnisRequester {
 			System.exit(1);
 		}
 
-		DigaFhirVerzeichnisParser parser = new DigaFhirVerzeichnisParser();
+		FhirHealthAppCatalogParser parser = new FhirHealthAppCatalogParser();
 
-		DigaVerzeichnis digaVerzeichnis =
+		HealthAppCatalog digaVerzeichnis =
 			parser
 				.withCatalogEntriesInput(catalogEntriesInputStream)
 				.withDeviceDefinitionsInput(deviceDefinitionsInputStream)
@@ -99,7 +99,7 @@ public class DigaFhirVerzeichnisRequester {
 		printDigaVerzeichnis(digaVerzeichnis);
 	}
 
-	private void printDigaVerzeichnis(DigaVerzeichnis digaVerzeichnis) {
+	private void printDigaVerzeichnis(HealthAppCatalog digaVerzeichnis) {
 
 		ObjectMapper mapper = new ObjectMapper();
 		String json;
@@ -111,7 +111,7 @@ public class DigaFhirVerzeichnisRequester {
 
 		try {
 
-			if(StringUtils.equals("-", outputFileName)) {
+			if (StringUtils.equals("-", outputFileName)) {
 				System.out.print(json);
 			} else {
 				outputFileName = StringUtils.defaultString(outputFileName, OUTPUT_FILE_NAME_DEFAULT);
@@ -138,7 +138,13 @@ public class DigaFhirVerzeichnisRequester {
 		Option help = new Option("h", "help", false, "prints the help");
 		Option input = new Option("in", "input-dir", true, "directory with FHIR XML-input files");
 		input.setRequired(true);
-		Option output = new Option("out", "output-file", true, "output file for combined json data, \n- for stdout, default '" + OUTPUT_FILE_NAME_DEFAULT + "'");
+		Option output =
+			new Option(
+				"out",
+				"output-file",
+				true,
+				"output file for combined json data, \n- for stdout, default '" + OUTPUT_FILE_NAME_DEFAULT + "'"
+			);
 		output.setRequired(false);
 
 		options.addOption(help);
