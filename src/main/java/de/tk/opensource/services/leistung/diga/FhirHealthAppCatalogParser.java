@@ -1,4 +1,4 @@
-/*--- (C) 1999-2020 Techniker Krankenkasse ---*/
+/*--- (C) 1999-2021 Techniker Krankenkasse ---*/
 
 package de.tk.opensource.services.leistung.diga;
 
@@ -571,24 +571,31 @@ public class FhirHealthAppCatalogParser {
 		appInfo.setAppName(rootDevice.getDeviceNameFirstRep().getName());
 
 		//Höchstdauer:
-		Type hoechstDauer =
+		Extension hoechstDauerExt =
 			rootDevice
 				.getExtensionByUrl(FhirHealthAppURIs.HEALTH_APP_NUTZUNGSHINWEIS)
-				.getExtensionByUrl("hoechtsdauer")
-				.getValue();
-		appInfo.setHoechstDauer(hoechstDauer.castToString(hoechstDauer).asStringValue());
+				.getExtensionByUrl("hoechtsdauer");
+		if (hoechstDauerExt != null) {
+			Type hoechstDauer = hoechstDauerExt.getValue();
+			appInfo.setHoechstDauer(hoechstDauer.castToString(hoechstDauer).asStringValue());
+		}
 
 		//Mindestdauer:
-		Type mindestDauer =
+		Extension mindestDauerExt =
 			rootDevice
 				.getExtensionByUrl(FhirHealthAppURIs.HEALTH_APP_NUTZUNGSHINWEIS)
-				.getExtensionByUrl("mindestdauer")
-				.getValue();
-		appInfo.setMindestDauer(mindestDauer.castToString(mindestDauer).asStringValue());
+				.getExtensionByUrl("mindestdauer");
+		if (mindestDauerExt != null) {
+			Type mindestDauer = mindestDauerExt.getValue();
+			appInfo.setMindestDauer(mindestDauer.castToString(mindestDauer).asStringValue());
+		}
 
 		//Zweckbestimmung:
-		Type zweckBestimmung = rootDevice.getExtensionByUrl(FhirHealthAppURIs.HEALTH_APP_ZWECKBESTIMMUNG).getValue();
-		appInfo.setBeschreibung(zweckBestimmung.castToString(zweckBestimmung).asStringValue());
+		Extension zweckBestimmungExt = rootDevice.getExtensionByUrl(FhirHealthAppURIs.HEALTH_APP_ZWECKBESTIMMUNG);
+		if (zweckBestimmungExt != null) {
+			Type zweckBestimmung = zweckBestimmungExt.getValue();
+			appInfo.setBeschreibung(zweckBestimmung.castToString(zweckBestimmung).asStringValue());
+		}
 
 		//DiGA-ID:
 		String digaId =
