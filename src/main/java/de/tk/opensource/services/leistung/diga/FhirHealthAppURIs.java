@@ -1,4 +1,4 @@
-/*--- (C) 1999-2020 Techniker Krankenkasse ---*/
+/*--- (C) 1999-2021 Techniker Krankenkasse ---*/
 
 package de.tk.opensource.services.leistung.diga;
 
@@ -31,6 +31,21 @@ public class FhirHealthAppURIs {
 	 */
 	public static final String HEALTH_APP_NUTZUNGSHINWEIS =
 		"https://fhir.trustedhealthapps.org/StructureDefinition/HealthAppNutzungshinweis";
+
+	/**
+	 * Höchstdauer einer DiGA
+	 */
+	public static final String HEALTH_APP_NUTZUNGSHINWEIS_HOECHSTDAUER = "hoechstdauer";
+
+	/**
+	 * Höchstdauer einer DiGA mit Tippfehler (kommt so im FHIR-Vereichnis vor).
+	 */
+	public static final String HEALTH_APP_NUTZUNGSHINWEIS_HOECHSTDAUER_TIPPFEHLER = "hoechtsdauer";
+
+	/**
+	 * Mindestdauer einer DiGA
+	 */
+	public static final String HEALTH_APP_NUTZUNGSHINWEIS_MINDESTDAUER = "mindestdauer";
 
 	/**
 	 * Der Link von DeviceDefinitions (Modul) auf die zugehörigen Verordnungseinheiten

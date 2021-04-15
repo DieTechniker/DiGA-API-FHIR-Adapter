@@ -15,6 +15,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -571,22 +572,35 @@ public class FhirHealthAppCatalogParser {
 		appInfo.setAppName(rootDevice.getDeviceNameFirstRep().getName());
 
 		//Höchstdauer:
-		Extension hoechstDauerExt =
-			rootDevice
-				.getExtensionByUrl(FhirHealthAppURIs.HEALTH_APP_NUTZUNGSHINWEIS)
-				.getExtensionByUrl("hoechtsdauer");
-		if (hoechstDauerExt != null) {
-			Type hoechstDauer = hoechstDauerExt.getValue();
+		Type hoechstDauer =
+			getSecondLevelExtension(
+				rootDevice,
+				FhirHealthAppURIs.HEALTH_APP_NUTZUNGSHINWEIS,
+				FhirHealthAppURIs.HEALTH_APP_NUTZUNGSHINWEIS_HOECHSTDAUER
+			)
+			.orElseGet(
+				() ->
+					getSecondLevelExtension(
+						rootDevice,
+						FhirHealthAppURIs.HEALTH_APP_NUTZUNGSHINWEIS,
+						FhirHealthAppURIs.HEALTH_APP_NUTZUNGSHINWEIS_HOECHSTDAUER_TIPPFEHLER
+					).orElse(null)
+			);
+
+		if (hoechstDauer != null) {
 			appInfo.setHoechstDauer(hoechstDauer.castToString(hoechstDauer).asStringValue());
 		}
 
 		//Mindestdauer:
-		Extension mindestDauerExt =
-			rootDevice
-				.getExtensionByUrl(FhirHealthAppURIs.HEALTH_APP_NUTZUNGSHINWEIS)
-				.getExtensionByUrl("mindestdauer");
-		if (mindestDauerExt != null) {
-			Type mindestDauer = mindestDauerExt.getValue();
+		Type mindestDauer =
+			getSecondLevelExtension(
+				rootDevice,
+				FhirHealthAppURIs.HEALTH_APP_NUTZUNGSHINWEIS,
+				FhirHealthAppURIs.HEALTH_APP_NUTZUNGSHINWEIS_MINDESTDAUER
+			)
+			.orElse(null);
+
+		if (mindestDauer != null) {
 			appInfo.setMindestDauer(mindestDauer.castToString(mindestDauer).asStringValue());
 		}
 
@@ -616,6 +630,17 @@ public class FhirHealthAppCatalogParser {
 		readMetaInfo(rootDevice, appInfo);
 
 		return appInfo;
+	}
+
+	private Optional<Type> getSecondLevelExtension(DomainResource resource, String mainUrl, String subUrl) {
+		return
+			resource
+				.getExtensionsByUrl(mainUrl)
+				.stream()
+				.map(e -> e.getExtensionByUrl(subUrl))
+				.filter(Objects::nonNull)
+				.map(e -> e.getValue())
+				.findAny();
 	}
 
 	private OrganizationInfo mapOrganizations(Organization organization) {
